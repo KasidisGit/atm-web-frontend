@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  atm:
+    container_name: atm
+    build:
+      context: ./atm
+      dockerfile: atm.dockerfile
+    networks:
+      - atm-network
+    ports:
+      - "8090:8080"
+    depends_on:
+      - mysql-container
+      - bankaccount
+    restart: always
+
+  bankaccount:
+    container_name: bankaccount
+    build:
+      context: ./bankaccount
+      dockerfile: bankaccount.dockerfile
+    networks:
+      - atm-network
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql-container
+    restart: always
+
+  mysql-container:
+    container_name: my-db
+    image: mysql
+    hostname: my-db
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - MYSQL_ROOT_HOST=%
+    restart: always
+    networks:
+      - atm-network
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - mysql-db:/var/lib/mysql
+
+volumes:
+  mysql-db:
+
+networks:
+  atm-network:
+    driver: bridge
+
+
